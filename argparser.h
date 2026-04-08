@@ -9,10 +9,9 @@ typedef struct command_line {
     char *argv[];
 } CMD_LINE;
 
+unsigned int get_max_cmd_lenght();
 
 CMD_LINE* parse_args(char str[]);
-
-unsigned int get_max_cmd_lenght();
 
 void print_line(CMD_LINE *line);
 
