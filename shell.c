@@ -18,18 +18,7 @@ int main(void) {
 
         CMD_LINE *line = parse_args(buffer);
 
-        if (strcmp(line->argv[0], "cd") == 0) {
-            int dir_len = strlen(line->argv[1]);
-
-            if (line->argv[1][dir_len - 1] == '\n') line->argv[1][dir_len - 1] = '\0';
-            
-            char local_dir_buffer[max_line_lenght - 100];
-            getcwd(local_dir_buffer, sizeof(local_dir_buffer));
-            strcat(local_dir_buffer, "/");
-            strcat(local_dir_buffer, line->argv[1]);
-            
-            chdir(local_dir_buffer);
-        }
+        execute_command(line);
 
         // Apenas para testes - Apagar depois
         char diretorio[100];

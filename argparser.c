@@ -24,6 +24,21 @@ CMD_LINE* parse_args(char str[]) {
     return line;
 }
 
+void execute_command(CMD_LINE *line) {
+    if (strcmp(line->argv[0], "cd") == 0) {
+        int dir_len = strlen(line->argv[1]);
+
+        if (line->argv[1][dir_len - 1] == '\n') line->argv[1][dir_len - 1] = '\0';
+        
+        char local_dir_buffer[MAX_COMMAND_LINE_SIZE - 100];
+        getcwd(local_dir_buffer, sizeof(local_dir_buffer));
+        strcat(local_dir_buffer, "/");
+        strcat(local_dir_buffer, line->argv[1]);
+        
+        chdir(local_dir_buffer);
+    }
+}
+
 void print_line(CMD_LINE *line) {
     for (int i = 0; i < line->argc; i++) {
         write(STDOUT_FILENO, line->argv[i], strlen(line->argv[i]));

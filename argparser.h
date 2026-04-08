@@ -13,6 +13,8 @@ unsigned int get_max_cmd_lenght();
 
 CMD_LINE* parse_args(char str[]);
 
+void execute_command(CMD_LINE *line);
+
 void print_line(CMD_LINE *line);
 
 void free_cmd_line(CMD_LINE *line);
