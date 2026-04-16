@@ -1,2 +1,6 @@
 shell
 ./pasta
+./network/netcat
+./bins/cat
+./bins/ls
+./bins/pwd
