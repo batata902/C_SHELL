@@ -147,7 +147,8 @@ void* send_data(void *sock) {
         int n = read(STDIN_FILENO, buffer, sizeof(buffer) - 1);
         buffer[n] = '\0';
 
+        if (strcmp(buffer, "exit\n") == 0) exit(0); // falta liberar memoria aqui
+
         write(s->client_fd, buffer, strlen(buffer));
-        print(buffer);
     }
 }
