@@ -16,6 +16,7 @@ typedef struct args {
 } Args;
 
 struct init_socket* get_server_socket(Args* args);
+
 struct init_socket* connect_to_server(Args* args);
 
 Args* parse_args(int argc, char *argv[]);
