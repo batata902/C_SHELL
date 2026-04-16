@@ -5,6 +5,7 @@
 
 int main(void) {
     system("clear");
+    write(STDOUT_FILENO, "Welcome to JJ Shell - v1.0\n", 28);
 
     unsigned int max_line_lenght = get_max_cmd_lenght();
     char shell[] = "\n\033[34mjjshell@kali\033[m \033[32m~\033[m \033[34m$\033[m ";

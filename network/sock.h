@@ -11,6 +11,7 @@ struct init_socket {
 typedef struct args {
     int mode; // 0 -> Server | 1 -> Client
     int port;
+    bool is_listening;
     bool verbose; // true: mostra | false: Nao mostra
     char *target;
 } Args;
@@ -19,7 +20,14 @@ struct init_socket* get_server_socket(Args* args);
 
 struct init_socket* connect_to_server(Args* args);
 
+void* recv_data(void *sock);
+
+void* send_data(void *sock);
+
+
 Args* parse_args(int argc, char *argv[]);
+
+void free_args(Args *args);
 
 
 #endif
