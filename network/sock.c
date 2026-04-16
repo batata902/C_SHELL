@@ -7,7 +7,10 @@
 #include <string.h>
 #include "sock.h"
 
+sem_t sem;
+
 Args* parse_args(int argc, char *argv[]) {
+    sem_init(&sem, 0, 1);
     if (argc <= 1) {
         write(STDOUT_FILENO, "Error: NULL arguments\n", 23);
         return NULL;
@@ -15,9 +18,9 @@ Args* parse_args(int argc, char *argv[]) {
 
     Args *args = (Args*) malloc(sizeof(Args));
     if (!args) return NULL;
-
-    args->target = (char *) malloc(200);
+    
     args->target = NULL;
+
     args->port = -1;
     args->verbose = false;
     args->is_listening = false;
@@ -58,8 +61,8 @@ Args* parse_args(int argc, char *argv[]) {
             continue;
         }
     }
-    if (args->is_listening == true && args->port == -1) {
-        write(STDOUT_FILENO, "Error: target given but port was not given\n", 44);
+    if (args->port == -1) {
+        write(STDOUT_FILENO, "Error: port was not given\n", 27);
         free(args);
         return NULL;
     }
@@ -68,16 +71,18 @@ Args* parse_args(int argc, char *argv[]) {
 }
 
 void free_args(Args *args) {
-    free(args->target);
     free(args);
 }
 
 void print(char *line) {
-
+    sem_wait(&sem);
+    write(STDOUT_FILENO, line, strlen(line));
+    sem_post(&sem);
 }
 
 struct init_socket* get_server_socket(Args *args) {
     struct init_socket *s = (struct init_socket *) malloc(sizeof(struct init_socket));
+
     s->server_fd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server, client;
 
@@ -89,11 +94,13 @@ struct init_socket* get_server_socket(Args *args) {
     listen(s->server_fd, 1);
 
     if (args->verbose) {
-        printf("listening at 0.0.0.0:%d...", args->port);
+        printf("listening at 0.0.0.0:%d...\n", args->port);
     }
 
     socklen_t len = sizeof(client);
     s->client_fd = accept(s->server_fd, (struct sockaddr *)&client, &len);
+
+    printf("Connection received!\n");
 
     return s;
 }
@@ -125,7 +132,7 @@ void* recv_data(void *sock) {
         int n = read(s->client_fd, buffer, sizeof(buffer) - 1);
         buffer[n] = '\0';
 
-        write(STDOUT_FILENO, buffer, strlen(buffer));
+        print(buffer);
         continue;
 
     }
@@ -136,8 +143,11 @@ void* send_data(void *sock) {
 
     while (1) {
         char buffer[1024];
-        scanf("%[^\n]", buffer);
+        
+        int n = read(STDIN_FILENO, buffer, sizeof(buffer) - 1);
+        buffer[n] = '\0';
 
         write(s->client_fd, buffer, strlen(buffer));
+        print(buffer);
     }
 }
