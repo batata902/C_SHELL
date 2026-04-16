@@ -1,13 +1,25 @@
 #include "argparser.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 const unsigned int MAX_COMMAND_LINE_SIZE = 5028;
 const unsigned short int MAX_ARGS = 65;
 
 unsigned int get_max_cmd_lenght() {
     return MAX_COMMAND_LINE_SIZE;
+}
+
+char* init_env() {
+    setenv("BINS", "/home/bins", 1);
+    char *dir = getenv("BINS");
+    if (dir == NULL) {
+        exit(1);
+    }
+    return dir;
 }
 
 CMD_LINE* parse_args(char str[]) {
@@ -21,21 +33,46 @@ CMD_LINE* parse_args(char str[]) {
         line->argc++;
         counter++;
     }
+    line->argv[counter] = NULL;
     return line;
 }
 
-void execute_command(CMD_LINE *line) {
-    if (strcmp(line->argv[0], "cd") == 0) {
-        int dir_len = strlen(line->argv[1]);
+void execute_command(CMD_LINE *line, char *env) {
+    if (line->argc == 0) return;
 
-        if (line->argv[1][dir_len - 1] == '\n') line->argv[1][dir_len - 1] = '\0';
-        
-        char local_dir_buffer[MAX_COMMAND_LINE_SIZE - 100];
-        getcwd(local_dir_buffer, sizeof(local_dir_buffer));
-        strcat(local_dir_buffer, "/");
-        strcat(local_dir_buffer, line->argv[1]);
-        
-        chdir(local_dir_buffer);
+    if (strcmp(line->argv[0], "exit") == 0) exit(0);
+
+    if (strcmp(line->argv[0], "clear") == 0) {
+        system("clear");
+        return;
+    }
+
+    if (strcmp(line->argv[0], "cd") == 0) {
+        if (line->argc < 2) {
+            chdir(getenv("HOME")); // se nenhum argumento
+        } else {
+            if (chdir(line->argv[1]) != 0) {
+                perror("cd failed");
+                return;
+            }
+        }
+    } else {
+        pid_t pid = fork();
+        if (pid < 0) {
+            write(STDOUT_FILENO, "couldn't execute\n", 18);
+        }
+        else if (pid == 0) {
+            char full_path[1024];
+            if (env[strlen(env) - 1] == '/')
+                snprintf(full_path, sizeof(full_path), "%s%s", env, line->argv[0]);
+            else 
+                snprintf(full_path, sizeof(full_path), "%s/%s", env, line->argv[0]);
+            execv(full_path, line->argv);
+            perror("error"); // se não existir, mostra erro
+            exit(1);
+        } else {
+            waitpid(pid, NULL, 0);
+        }
     }
 }
 

@@ -11,9 +11,11 @@ typedef struct command_line {
 
 unsigned int get_max_cmd_lenght();
 
+char* init_env();
+
 CMD_LINE* parse_args(char str[]);
 
-void execute_command(CMD_LINE *line);
+void execute_command(CMD_LINE *line, char *env);
 
 void print_line(CMD_LINE *line);
 

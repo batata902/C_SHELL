@@ -7,23 +7,21 @@ int main(void) {
     system("clear");
 
     unsigned int max_line_lenght = get_max_cmd_lenght();
-    char shell[] = "\njjshell@kali ~ $ ";
+    char shell[] = "\n\033[34mjjshell@kali\033[m \033[32m~\033[m \033[34m$\033[m ";
+    char *env = init_env();
 
     while (1) {
-        write(STDOUT_FILENO, shell, 18);
+        write(STDOUT_FILENO, shell, 43);
 
         char buffer[max_line_lenght];
         int n = read(STDIN_FILENO, buffer, max_line_lenght - 1);
-        buffer[n] = '\0';
+        if (n <= 0) continue;
+        if (buffer[n - 1] == '\n') buffer[n - 1] = '\0';
+        else buffer[n] = '\0';
 
         CMD_LINE *line = parse_args(buffer);
 
-        execute_command(line);
-
-        // Apenas para testes - Apagar depois
-        char diretorio[100];
-        getcwd(diretorio, 99);
-        write(STDOUT_FILENO, diretorio, strlen(diretorio));
+        execute_command(line, env);
 
         free_cmd_line(line);
     }
