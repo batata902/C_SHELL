@@ -68,7 +68,7 @@ void execute_command(CMD_LINE *line, char *env) {
             else 
                 snprintf(full_path, sizeof(full_path), "%s/%s", env, line->argv[0]);
             execv(full_path, line->argv);
-            perror("error"); // se não existir, mostra erro
+            perror("error"); 
             exit(1);
         } else {
             waitpid(pid, NULL, 0);
