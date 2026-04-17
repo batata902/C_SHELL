@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <string.h>
@@ -17,8 +18,10 @@ typedef struct fileinfos {
 
 } FileInfos;
 
+
 Args* parse_args(int argc, char *argv[]);
 FileInfos* get_file_infos(char *path);
+void delete_recursively(char *folder_path);
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -37,10 +40,11 @@ int main(int argc, char *argv[]) {
         }
 
         else {
+
             if (infos->empty_dir) {
                 rmdir(file_name);
             } else {
-                write(STDOUT_FILENO, "Ainda vamos implementar\n", 25);
+                delete_recursively(infos->path);
                 free(infos);
                 return 0;
             }
@@ -107,4 +111,41 @@ FileInfos* get_file_infos(char *path) {
         infos->is_reg = true;
         return infos;
     }
+}
+
+void delete_recursively(char *folder_path) {
+    struct stat buffer;
+
+    if (stat(folder_path, &buffer) != 0) {
+        write(STDOUT_FILENO, "Error: No such a file or directory\n", 36);
+        return;
+    }
+
+    DIR *dir = opendir(folder_path);
+    if (!dir) {
+        perror("dir");
+        return;
+    }
+    struct dirent *entry;
+
+    while ((entry = readdir(dir)) != NULL) {
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "%s/%s", folder_path, entry->d_name);
+
+        struct stat buffer;
+        if (stat(full_path, &buffer) != 0) {
+            perror("Error");
+            closedir(dir);
+            return;
+        }
+
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+        if (S_ISDIR(buffer.st_mode)) {
+            delete_recursively(full_path);
+            continue;
+        }
+        unlink(full_path);
+    }
+    rmdir(folder_path);
+    closedir(dir);
 }

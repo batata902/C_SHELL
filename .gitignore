@@ -5,3 +5,5 @@ bins/cat
 bins/ls
 bins/pwd
 bins/rm
+bins/touch
+bins/mkdir
